@@ -1,0 +1,165 @@
+/* PERSON A OWNS THIS FILE (Screen 5 only), so theme.css stays Person B's.
+   Hard constraint: Screen 5 fits 1280x720 with NO scrolling. That is the
+   projector. Header is 56px, so this layout gets 664px of height. */
+
+.activity {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 692px minmax(0, 1fr);
+  gap: 16px;
+  padding: 12px 16px;
+  overflow: hidden;
+}
+
+.activity-stage-col {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+/* --- step tracker --- */
+.step-tracker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  flex: 0 0 auto;
+}
+
+.step-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.step-chip.is-active { background: #e8f0fe; color: var(--primary); font-weight: 600; }
+.step-chip.is-done { color: #188038; }
+
+.step-num {
+  width: 18px; height: 18px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: #e8eaed; font-size: 11px; font-weight: 600;
+}
+.step-chip.is-active .step-num { background: var(--primary); color: #fff; }
+.step-chip.is-done .step-num { background: #188038; color: #fff; }
+
+.step-attempts { margin-left: auto; font-size: 12px; color: var(--muted); }
+
+/* --- stage --- */
+.stage-frame {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px;
+  flex: 0 0 auto;
+  line-height: 0;
+}
+.stage-canvas { display: block; border-radius: 4px; }
+
+/* --- reasoning panel --- */
+.reasoning-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  overflow-y: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.step-body { display: flex; flex-direction: column; gap: 10px; }
+.step-title { margin: 0; font-size: 16px; font-weight: 600; }
+.step-sub { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.45; }
+
+.btn-block { width: 100%; margin-top: 2px; }
+.btn-primary:disabled { background: #dadce0; color: #9aa0a6; cursor: not-allowed; }
+
+.btn-ghost {
+  width: 100%;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 9px 16px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+/* --- predict --- */
+.predict-choices { display: flex; flex-direction: column; gap: 8px; }
+.predict-btn {
+  display: flex; flex-direction: column; gap: 2px; text-align: left;
+  padding: 12px 14px; border: 1px solid var(--border);
+  border-radius: var(--radius); background: var(--surface);
+}
+.predict-btn.is-picked { border-color: var(--primary); background: #e8f0fe; }
+.predict-label { font-size: 15px; font-weight: 600; }
+.predict-hint { font-size: 12px; color: var(--muted); }
+
+.confidence-caption { font-size: 12px; color: var(--muted); }
+.confidence-row { display: flex; gap: 6px; margin-top: 6px; }
+.confidence-btn {
+  flex: 1; padding: 7px 4px; font-size: 12px;
+  border: 1px solid var(--border); border-radius: 4px; background: var(--surface);
+  color: var(--muted);
+}
+.confidence-btn.is-picked { border-color: var(--primary); color: var(--primary); background: #e8f0fe; }
+
+/* --- compute --- */
+.input-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+.input-row { display: flex; align-items: center; gap: 8px; margin: 6px 0 12px; }
+.velocity-input {
+  flex: 1; min-width: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 30px; font-weight: 700;
+  padding: 8px 12px;
+  border: 2px solid var(--border); border-radius: 6px;
+  background: var(--surface); color: var(--text);
+}
+.velocity-input:focus { outline: none; border-color: var(--primary); }
+.input-unit { font-size: 16px; color: var(--muted); font-weight: 500; }
+.btn-shoot { font-size: 15px; padding: 12px 24px; }
+
+.presets { margin-top: 4px; border-top: 1px dashed var(--border); padding-top: 10px; }
+.presets-caption {
+  font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: #9aa0a6;
+}
+.presets-row { display: flex; gap: 6px; margin-top: 6px; }
+.preset-btn {
+  flex: 1; padding: 6px 4px; font-size: 11px;
+  border: 1px solid var(--border); border-radius: 4px;
+  background: #f8f9fa; color: var(--muted);
+}
+.preset-btn:hover { background: #f1f3f4; }
+
+/* --- outcome --- */
+.outcome-headline { margin: 0; font-size: 22px; font-weight: 600; }
+.outcome-headline.is-swish { color: #188038; }
+.outcome-detail { margin: 0; font-size: 14px; line-height: 1.5; }
+.outcome-predict {
+  margin: 0; font-size: 13px; color: var(--muted);
+  background: #f8f9fa; border-radius: 6px; padding: 10px 12px;
+}
+
+/* --- explain --- */
+.explain-options { display: flex; flex-direction: column; gap: 6px; }
+.explain-btn {
+  text-align: left; padding: 10px 12px; font-size: 13px; line-height: 1.4;
+  border: 1px solid var(--border); border-radius: 6px; background: var(--surface);
+}
+.explain-btn.is-picked { border-color: var(--primary); background: #e8f0fe; }
+.explain-response {
+  margin: 0; font-size: 13px; line-height: 1.5;
+  background: #e6f4ea; border-left: 3px solid #188038;
+  padding: 10px 12px; border-radius: 0 6px 6px 0;
+}

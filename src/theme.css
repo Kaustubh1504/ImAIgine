@@ -1,0 +1,60 @@
+/* PERSON B OWNS THIS FILE. Classroom tokens live here.
+   Fonts must stay local — the zero-network claim is checked in the network tab. */
+:root {
+  --bg: #f1f3f4;
+  --surface: #ffffff;
+  --border: #dadce0;
+  --primary: #1a73e8;
+  --text: #202124;
+  --muted: #5f6368;
+  --radius: 8px;
+  --shadow: 0 1px 2px rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+button { font-family: inherit; cursor: pointer; }
+
+.app { min-height: 100vh; display: flex; flex-direction: column; }
+
+.app-header {
+  height: 56px;
+  flex: 0 0 56px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  background: none; border: none; padding: 0;
+  font-size: 18px; color: var(--text);
+}
+.brand-mark { font-size: 20px; }
+.brand-name { font-weight: 500; }
+
+.role-toggle { display: flex; gap: 4px; }
+.role-btn {
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--muted); padding: 6px 14px; border-radius: 999px; font-size: 13px;
+}
+.role-btn.is-active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+.app-main { flex: 1 1 auto; min-height: 0; }
+
+.btn-primary {
+  background: var(--primary); color: #fff; border: none;
+  padding: 10px 24px; border-radius: 4px; font-size: 14px; font-weight: 500;
+}
+
+.screen-stub { padding: 40px; }
