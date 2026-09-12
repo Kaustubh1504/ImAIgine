@@ -2,7 +2,6 @@ import React from 'react';
 
 // Thin strip along the top of the stage. Shows the sequence and the active step.
 export const STEPS = [
-  { id: 'predict', label: 'Predict' },
   { id: 'compute', label: 'Compute' },
   { id: 'run', label: 'Run' },
   { id: 'outcome', label: 'Outcome' },

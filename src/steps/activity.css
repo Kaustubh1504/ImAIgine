@@ -95,26 +95,6 @@
   font-size: 13px;
 }
 
-/* --- predict --- */
-.predict-choices { display: flex; flex-direction: column; gap: 8px; }
-.predict-btn {
-  display: flex; flex-direction: column; gap: 2px; text-align: left;
-  padding: 12px 14px; border: 1px solid var(--border);
-  border-radius: var(--radius); background: var(--surface);
-}
-.predict-btn.is-picked { border-color: var(--primary); background: #e8f0fe; }
-.predict-label { font-size: 15px; font-weight: 600; }
-.predict-hint { font-size: 12px; color: var(--muted); }
-
-.confidence-caption { font-size: 12px; color: var(--muted); }
-.confidence-row { display: flex; gap: 6px; margin-top: 6px; }
-.confidence-btn {
-  flex: 1; padding: 7px 4px; font-size: 12px;
-  border: 1px solid var(--border); border-radius: 4px; background: var(--surface);
-  color: var(--muted);
-}
-.confidence-btn.is-picked { border-color: var(--primary); color: var(--primary); background: #e8f0fe; }
-
 /* --- compute --- */
 .input-label { font-size: 12px; color: var(--muted); font-weight: 500; }
 .input-row { display: flex; align-items: center; gap: 8px; margin: 6px 0 12px; }
@@ -146,10 +126,6 @@
 .outcome-headline { margin: 0; font-size: 22px; font-weight: 600; }
 .outcome-headline.is-swish { color: #188038; }
 .outcome-detail { margin: 0; font-size: 14px; line-height: 1.5; }
-.outcome-predict {
-  margin: 0; font-size: 13px; color: var(--muted);
-  background: #f8f9fa; border-radius: 6px; padding: 10px 12px;
-}
 
 /* --- explain --- */
 .explain-options { display: flex; flex-direction: column; gap: 6px; }

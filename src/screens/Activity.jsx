@@ -3,7 +3,6 @@ import Stage from '../Stage.jsx';
 import ReasoningPanel from '../ReasoningPanel.jsx';
 import Reactions from '../Reactions.jsx';
 import StepTracker from '../steps/StepTracker.jsx';
-import Predict from '../steps/Predict.jsx';
 import Compute from '../steps/Compute.jsx';
 import Outcome from '../steps/Outcome.jsx';
 import Explain from '../steps/Explain.jsx';
@@ -15,11 +14,15 @@ import '../steps/activity.css';
 // Slower than real time. The arc has to be readable from the back of a room.
 const PLAYBACK_RATE = 0.55;
 
+// ...but bounded, because a shot that falls short now bounces on and would sit
+// at nearly 7s of playback. The demo has 2:40 total; no single shot gets that.
+const MIN_FLIGHT_MS = 1600;
+const MAX_FLIGHT_MS = 3200;
+
 export default function Activity({ go, role }) {
   // 'generating' is the beat after the teacher clicks Generate simulation.
   const [phase, setPhase] = useState('generating');
-  const [step, setStep] = useState('predict');
-  const [prediction, setPrediction] = useState(null);
+  const [step, setStep] = useState('compute');
   const [shot, setShot] = useState(null);
   const [ghosts, setGhosts] = useState([]);
   const [progress, setProgress] = useState(1);
@@ -43,7 +46,10 @@ export default function Activity({ go, role }) {
       setProgress(0);
 
       const flightSeconds = result.trajectory[result.trajectory.length - 1].t;
-      const duration = (flightSeconds / PLAYBACK_RATE) * 1000;
+      const duration = Math.min(
+        MAX_FLIGHT_MS,
+        Math.max(MIN_FLIGHT_MS, (flightSeconds / PLAYBACK_RATE) * 1000)
+      );
       const start = performance.now();
 
       clearTimers();
@@ -83,9 +89,7 @@ export default function Activity({ go, role }) {
   };
 
   const panelStep =
-    step === 'predict'
-      ? 'predict'
-      : step === 'run'
+    step === 'run'
       ? 'run'
       : step === 'outcome'
       ? 'outcome'
@@ -119,15 +123,6 @@ export default function Activity({ go, role }) {
           </div>
         )}
 
-        {phase === 'ready' && step === 'predict' && (
-          <Predict
-            onDone={(p) => {
-              setPrediction(p);
-              setStep('compute');
-            }}
-          />
-        )}
-
         {phase === 'ready' && step === 'compute' && <Compute onShoot={shoot} attempt={attempts} />}
 
         {phase === 'ready' && step === 'run' && (
@@ -140,7 +135,6 @@ export default function Activity({ go, role }) {
         {phase === 'ready' && step === 'outcome' && shot && (
           <Outcome
             shot={shot}
-            prediction={prediction}
             onRevise={revise}
             onExplain={() => setStep('explain')}
             onRestart={() => go({ screen: 1 })}

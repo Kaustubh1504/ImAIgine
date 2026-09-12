@@ -39,30 +39,14 @@ function describe(shot) {
   };
 }
 
-export default function Outcome({ shot, prediction, onRevise, onExplain, onRestart }) {
+export default function Outcome({ shot, onRevise, onExplain, onRestart }) {
   const { headline, detail } = describe(shot);
   const missed = shot.outcome !== 'swish';
-
-  const predictedRight =
-    prediction &&
-    ((prediction.choice === 'in' && shot.outcome === 'swish') ||
-      (prediction.choice === 'long' && shot.outcome === 'long') ||
-      (prediction.choice === 'short' && shot.outcome === 'short'));
 
   return (
     <div className="step-body">
       <h3 className={'outcome-headline' + (missed ? '' : ' is-swish')}>{headline}</h3>
       <p className="outcome-detail">{detail}</p>
-
-      {prediction && (
-        <p className="outcome-predict">
-          You predicted it would{' '}
-          <strong>
-            {prediction.choice === 'in' ? 'go in' : prediction.choice === 'long' ? 'sail long' : 'fall short'}
-          </strong>
-          . {predictedRight ? 'That is what happened.' : 'That is not what happened.'}
-        </p>
-      )}
 
       {missed ? (
         <>

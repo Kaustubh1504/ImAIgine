@@ -1,12 +1,24 @@
-import { G, LAUNCH, HOOP, VIEW, SWISH_TOL, RIM_TOL, FIXED_ANGLE } from './contract.js';
+import {
+  G,
+  LAUNCH,
+  HOOP,
+  VIEW,
+  SWISH_TOL,
+  RIM_TOL,
+  FIXED_ANGLE,
+  RESTITUTION,
+  FLOOR_FRICTION,
+  MAX_BOUNCES,
+  SETTLE_SPEED,
+  RIM_RADIUS,
+} from './contract.js';
 
 const DT = 0.005;
 const MAX_T = 6;
 
-// Seconds of flight kept past the rim on a swish. The ball still carries its
-// forward speed, so a long tail carries it past the backboard and the shot
-// reads as a miss. This stops it inside the net, where it belongs.
-const SWISH_TAIL = 0.09;
+// On a swish the ball is truncated as it clears the far edge of the ring, so it
+// comes to rest inside the net rather than carrying on past the backboard --
+// which read as a miss on screen.
 
 const rad = (deg) => (deg * Math.PI) / 180;
 
@@ -33,39 +45,49 @@ export function simulate({ velocity, angle }) {
 
   let yAtHoop = null; // interpolated height as the ball passes the rim plane
   let tAtHoop = null;
-  let landingX = null; // where it hits the floor, for "fell short by X"
+  let landingX = null; // where it FIRST hits the floor, for "fell short by X"
+  let bounces = 0;
 
   while (t < MAX_T) {
-    const px = x;
-    const py = y;
+    const prevX = x;
+    const prevY = y;
 
     x += vx * DT;
     y += vy * DT;
     vy -= G * DT;
     t += DT;
 
-    // Rim plane crossing: interpolate rather than take the nearest sample.
-    if (yAtHoop === null && px <= HOOP.x && x > HOOP.x && x !== px) {
-      const f = (HOOP.x - px) / (x - px);
-      yAtHoop = py + f * (y - py);
+    // Rim plane crossing, interpolated rather than snapped to the nearest
+    // sample. Only counted on the first airborne pass -- a ball that has
+    // already bounced may cross x = HOOP.x again along the floor, and that is
+    // not a shot at the hoop.
+    if (yAtHoop === null && bounces === 0 && prevX <= HOOP.x && x > HOOP.x && x !== prevX) {
+      const f = (HOOP.x - prevX) / (x - prevX);
+      yAtHoop = prevY + f * (y - prevY);
       tAtHoop = t - DT + f * DT;
+    }
+
+    if (y <= 0) {
+      // Land exactly on the floor rather than a step below it.
+      const f = prevY > 0 && prevY !== y ? prevY / (prevY - y) : 0;
+      const contactX = prevX + f * (x - prevX);
+      if (landingX === null) landingX = contactX;
+
+      x = contactX;
+      y = 0;
+      trajectory.push({ x, y, t });
+
+      bounces += 1;
+      vy = -vy * RESTITUTION;
+      vx *= FLOOR_FRICTION;
+
+      if (bounces > MAX_BOUNCES || vy < SETTLE_SPEED || x > VIEW.wMeters) break;
+      continue;
     }
 
     trajectory.push({ x, y, t });
 
-    if (y <= 0) {
-      // Interpolate the floor contact so the arc ends on the ground, not under it.
-      if (y !== py && py > 0) {
-        const f = py / (py - y);
-        landingX = px + f * (x - px);
-        trajectory[trajectory.length - 1] = { x: landingX, y: 0, t };
-      } else {
-        landingX = x;
-      }
-      break;
-    }
-
-    if (x > VIEW.wMeters) break; // off the right edge — the parking lot shot
+    if (x > VIEW.wMeters) break; // off the right edge -- the parking lot shot
   }
 
   let outcome;
@@ -83,9 +105,10 @@ export function simulate({ velocity, angle }) {
   }
 
   let finalTrajectory = trajectory;
-  if (outcome === 'swish' && tAtHoop !== null) {
-    const cutoff = tAtHoop + SWISH_TAIL;
-    finalTrajectory = trajectory.filter((p) => p.t <= cutoff);
+  if (outcome === 'swish') {
+    const cutoff = HOOP.x + RIM_RADIUS;
+    const idx = trajectory.findIndex((p) => p.x > cutoff);
+    if (idx > 1) finalTrajectory = trajectory.slice(0, idx + 1);
   }
 
   return {
