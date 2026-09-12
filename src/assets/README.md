@@ -1,20 +1,12 @@
 # Shooter face
 
-Drop a square image in this folder and it is mapped onto the head of the figure
-taking the shot. **The filename does not matter** — any `.png`, `.jpg`, `.jpeg`
-or `.webp` here is picked up automatically. If you keep several, one named
-`shooter-face.*` wins; otherwise it is the first alphabetically.
+`stephencurry.jpeg` is imported directly by `Stage.jsx` and drawn on the head of
+the figure taking the shot.
 
-With no image present the figure falls back to a plain silhouette head, so
-neither state breaks.
+The crop is hardcoded — `FACE_CROP` in `Stage.jsx` is a fixed source square
+tuned to this exact 416x416 photo. **Swap the file and the crop needs
+re-tuning**, or the head will frame the wrong part of the image.
 
-Two things to know:
-
-1. **Keep it local.** Do not hotlink a remote URL. The build claims zero
-   external requests and a judge can check that in the network tab in five
-   seconds. A file in this folder is bundled by Vite, so the claim stays true.
-
-2. **Crop it tight and square** — head and shoulders, face centred. The image is
-   clipped to a circle, and the head is drawn larger than human scale so the
-   face reads at all; that enlargement is what makes the figure look like an
-   action figure rather than a person.
+Keep the image local. It is bundled by Vite and served same-origin; hotlinking a
+remote URL would break the zero-external-request claim, which is checkable in
+the network tab.

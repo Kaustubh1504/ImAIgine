@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { LAUNCH, HOOP, VIEW, RIM_RADIUS, BALL_RADIUS } from './contract.js';
+import FACE_URL from './assets/stephencurry.jpeg';
 
 const W = VIEW.wMeters * VIEW.pxPerMeter; // 660
 const H = VIEW.hMeters * VIEW.pxPerMeter; // 520
@@ -45,27 +46,18 @@ let woodTex = null;
 let leatherTex = null;
 
 /* ------------------------------------------------------------------------ */
-/* Optional face for the shooter. Drop ANY square image into src/assets/ and   */
-/* it is mapped onto the head -- the filename does not matter, so there is     */
-/* nothing to rename. If several are present, one called shooter-face wins,    */
-/* otherwise it is the first alphabetically.                                   */
-/* Globbed rather than imported so a missing file is not a build error, and    */
-/* bundled rather than hotlinked so the zero-external-request claim holds.     */
+/* The shooter's face. Imported directly and cropped to fixed numbers tuned to */
+/* this exact photo. Bundled by Vite and served same-origin, not hotlinked.    */
 /* ------------------------------------------------------------------------ */
 
-const faceModules = import.meta.glob('./assets/*.{png,jpg,jpeg,webp}', {
-  eager: true,
-  query: '?url',
-  import: 'default',
-});
-const facePaths = Object.keys(faceModules).sort();
-const preferred = facePaths.find((p) => /shooter-face\.[^.]+$/i.test(p));
-const FACE_URL = faceModules[preferred || facePaths[0]] || null;
+// Source square inside the 416x416 photo that frames the head. Hardcoded to
+// this exact image -- swap the file and these numbers need re-tuning.
+const FACE_CROP = { x: 112, y: 0, size: 216 };
 
 let faceImg = null;
 let faceReady = false;
 function loadFace(onReady) {
-  if (!FACE_URL || faceImg) return;
+  if (faceImg) return;
   faceImg = new Image();
   faceImg.onload = () => {
     faceReady = true;
@@ -391,16 +383,8 @@ function drawShooter(c) {
     c.beginPath();
     c.arc(headX, headY, headR, 0, Math.PI * 2);
     c.clip();
-    // Portrait crop: take a square from the upper-middle of the source rather
-    // than squashing the whole image in. Head-and-shoulders photos put the face
-    // in the top half, so fitting the full frame spends half the circle on the
-    // jersey and leaves the face too small to recognise.
-    const iw = faceImg.naturalWidth || faceImg.width;
-    const ih = faceImg.naturalHeight || faceImg.height;
-    const side = Math.min(iw, ih) * 0.58;
-    const sx = (iw - side) / 2;
-    const sy = Math.min(ih - side, ih * 0.02);
-    c.drawImage(faceImg, sx, sy, side, side, headX - headR, headY - headR, headR * 2, headR * 2);
+    const { x: sx, y: sy, size } = FACE_CROP;
+    c.drawImage(faceImg, sx, sy, size, size, headX - headR, headY - headR, headR * 2, headR * 2);
     c.restore();
     c.strokeStyle = 'rgba(47, 54, 62, 0.55)';
     c.lineWidth = 1.5;
