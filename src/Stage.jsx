@@ -374,9 +374,9 @@ function drawShooter(c) {
   // Head LAST, so neither arm paints across the face. With a face supplied the head is drawn larger --
   // at true scale it is a 12px circle and any face is a smudge. The bigger head
   // is why the figure reads as an action figure rather than a person.
-  const headX = bx + 0.02 * M;
-  const headY = py(1.68);
-  const headR = 0.12 * M * (faceReady ? 1.75 : 1);
+  const headX = bx + (faceReady ? 0.11 : 0.02) * M;
+  const headY = py(faceReady ? 1.8 : 1.68);
+  const headR = 0.12 * M * (faceReady ? 2.5 : 1);
 
   if (faceReady) {
     c.save();
