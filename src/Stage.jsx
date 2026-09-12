@@ -45,18 +45,22 @@ let woodTex = null;
 let leatherTex = null;
 
 /* ------------------------------------------------------------------------ */
-/* Optional face for the shooter. Drop a square image at                      */
-/* src/assets/shooter-face.{png,jpg,jpeg,webp} and it is mapped onto the head. */
+/* Optional face for the shooter. Drop ANY square image into src/assets/ and   */
+/* it is mapped onto the head -- the filename does not matter, so there is     */
+/* nothing to rename. If several are present, one called shooter-face wins,    */
+/* otherwise it is the first alphabetically.                                   */
 /* Globbed rather than imported so a missing file is not a build error, and    */
 /* bundled rather than hotlinked so the zero-external-request claim holds.     */
 /* ------------------------------------------------------------------------ */
 
-const faceModules = import.meta.glob('./assets/shooter-face.{png,jpg,jpeg,webp}', {
+const faceModules = import.meta.glob('./assets/*.{png,jpg,jpeg,webp}', {
   eager: true,
   query: '?url',
   import: 'default',
 });
-const FACE_URL = Object.values(faceModules)[0] || null;
+const facePaths = Object.keys(faceModules).sort();
+const preferred = facePaths.find((p) => /shooter-face\.[^.]+$/i.test(p));
+const FACE_URL = faceModules[preferred || facePaths[0]] || null;
 
 let faceImg = null;
 let faceReady = false;
@@ -359,31 +363,6 @@ function drawShooter(c) {
   c.quadraticCurveTo(bx - 0.17 * M, py(1.26), bx - 0.11 * M, py(1.5));
   c.fill();
 
-  // head, clear of both arms. With a face supplied the head is drawn larger --
-  // at true scale it is a 12px circle and any face is a smudge. The bigger head
-  // is why the figure reads as an action figure rather than a person.
-  const headX = bx + 0.02 * M;
-  const headY = py(1.68);
-  const headR = 0.12 * M * (faceReady ? 1.75 : 1);
-
-  if (faceReady) {
-    c.save();
-    c.beginPath();
-    c.arc(headX, headY, headR, 0, Math.PI * 2);
-    c.clip();
-    c.drawImage(faceImg, headX - headR, headY - headR, headR * 2, headR * 2);
-    c.restore();
-    c.strokeStyle = 'rgba(47, 54, 62, 0.55)';
-    c.lineWidth = 1.5;
-    c.beginPath();
-    c.arc(headX, headY, headR, 0, Math.PI * 2);
-    c.stroke();
-  } else {
-    c.beginPath();
-    c.arc(headX, headY, headR, 0, Math.PI * 2);
-    c.fill();
-  }
-
   // shooting arm, up to the release point
   c.lineWidth = 0.1 * M;
   c.beginPath();
@@ -399,6 +378,41 @@ function drawShooter(c) {
   c.lineTo(bx - 0.2 * M, py(1.58));
   c.lineTo(bx - 0.17 * M, py(1.78));
   c.stroke();
+
+  // Head LAST, so neither arm paints across the face. With a face supplied the head is drawn larger --
+  // at true scale it is a 12px circle and any face is a smudge. The bigger head
+  // is why the figure reads as an action figure rather than a person.
+  const headX = bx + 0.02 * M;
+  const headY = py(1.68);
+  const headR = 0.12 * M * (faceReady ? 1.75 : 1);
+
+  if (faceReady) {
+    c.save();
+    c.beginPath();
+    c.arc(headX, headY, headR, 0, Math.PI * 2);
+    c.clip();
+    // Portrait crop: take a square from the upper-middle of the source rather
+    // than squashing the whole image in. Head-and-shoulders photos put the face
+    // in the top half, so fitting the full frame spends half the circle on the
+    // jersey and leaves the face too small to recognise.
+    const iw = faceImg.naturalWidth || faceImg.width;
+    const ih = faceImg.naturalHeight || faceImg.height;
+    const side = Math.min(iw, ih) * 0.58;
+    const sx = (iw - side) / 2;
+    const sy = Math.min(ih - side, ih * 0.02);
+    c.drawImage(faceImg, sx, sy, side, side, headX - headR, headY - headR, headR * 2, headR * 2);
+    c.restore();
+    c.strokeStyle = 'rgba(47, 54, 62, 0.55)';
+    c.lineWidth = 1.5;
+    c.beginPath();
+    c.arc(headX, headY, headR, 0, Math.PI * 2);
+    c.stroke();
+  } else {
+    c.beginPath();
+    c.arc(headX, headY, headR, 0, Math.PI * 2);
+    c.fill();
+  }
+
   c.restore();
 }
 
