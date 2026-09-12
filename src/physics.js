@@ -1,17 +1,18 @@
-import { G, LAUNCH, HOOP, VIEW, SWISH_TOL, RIM_TOL } from './contract.js';
+import { G, LAUNCH, HOOP, VIEW, SWISH_TOL, RIM_TOL, FIXED_ANGLE } from './contract.js';
 
 const DT = 0.005;
 const MAX_T = 6;
 
-// Seconds of flight kept past the rim on a swish, so the ball visibly drops
-// through the net instead of sailing on behind the backboard.
-const SWISH_TAIL = 0.3;
+// Seconds of flight kept past the rim on a swish. The ball still carries its
+// forward speed, so a long tail carries it past the backboard and the shot
+// reads as a miss. This stops it inside the net, where it belongs.
+const SWISH_TAIL = 0.09;
 
 const rad = (deg) => (deg * Math.PI) / 180;
 
 // The launch speed that puts the ball exactly on the rim, derived from the
 // contract constants. Never hardcode this — if a constant moves, this moves.
-export function correctVelocity(angle = 50) {
+export function correctVelocity(angle = FIXED_ANGLE) {
   const th = rad(angle);
   const D = HOOP.x - LAUNCH.x;
   const h = HOOP.y - LAUNCH.y;

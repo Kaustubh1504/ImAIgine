@@ -16,12 +16,20 @@ const GUIDE = '#9aa0a6';
 const RIM = '#d93025';
 const POLE = '#5f6368';
 const BALL = '#f29900';
-const TRAIL = 'rgba(242, 153, 0, 0.35)';
-const GHOST = 'rgba(95, 99, 104, 0.28)';
+const TRAIL = 'rgba(230, 145, 0, 0.72)';
+const GHOST = 'rgba(95, 99, 104, 0.34)';
+
+// Strip of canvas reserved below the floor for the span dimension. This shifts
+// the origin up; it does NOT change the scale (1 m is still VIEW.pxPerMeter).
+const GROUND_PAD = 34;
+
+// Headroom actually drawn, in metres. The 15 m/s shot peaks at 8.77 m and must
+// stay inside this or nobody sees the arc. Asserted in the acceptance test.
+export const VISIBLE_METERS = (H - GROUND_PAD) / VIEW.pxPerMeter;
 
 // meters -> canvas pixels (y flipped)
 const px = (x) => x * VIEW.pxPerMeter;
-const py = (y) => H - y * VIEW.pxPerMeter;
+const py = (y) => H - GROUND_PAD - y * VIEW.pxPerMeter;
 
 function drawCourt(c) {
   c.fillStyle = COURT_BG;
@@ -30,6 +38,8 @@ function drawCourt(c) {
   // floor
   c.fillStyle = '#eceff1';
   c.fillRect(0, py(0), W, H - py(0));
+  c.fillStyle = '#e0e3e5';
+  c.fillRect(0, py(0), W, 3);
   c.strokeStyle = FLOOR;
   c.lineWidth = 2;
   c.beginPath();
@@ -85,12 +95,12 @@ function drawCourt(c) {
   c.strokeStyle = POLE;
   c.lineWidth = 4;
   c.beginPath();
-  c.moveTo(px(LAUNCH.x) - 14, py(LAUNCH.y));
-  c.lineTo(px(LAUNCH.x) + 14, py(LAUNCH.y));
+  c.moveTo(px(LAUNCH.x), py(LAUNCH.y));
+  c.lineTo(px(LAUNCH.x) + 30, py(LAUNCH.y));
   c.stroke();
   c.beginPath();
-  c.moveTo(px(LAUNCH.x), py(LAUNCH.y));
-  c.lineTo(px(LAUNCH.x), py(0));
+  c.moveTo(px(LAUNCH.x) + 3, py(LAUNCH.y));
+  c.lineTo(px(LAUNCH.x) + 3, py(0));
   c.stroke();
 }
 
@@ -124,28 +134,49 @@ function label(c, text, x, y, align = 'center') {
 // On-screen numbers must match the picture, or the stage stops being evidence.
 function drawMeasurements(c) {
   const floorY = py(0);
-  const dimY = floorY + 26;
-
-  dashed(c, px(LAUNCH.x), floorY, px(HOOP.x), floorY);
-  dashed(c, px(HOOP.x), py(HOOP.y), px(HOOP.x), floorY);
+  const rimR = px(HOOP.x + RIM_RADIUS);
+  const poleX = rimR + 10 + 34;
 
   c.strokeStyle = GUIDE;
   c.lineWidth = 1.5;
+
+  // --- horizontal span, launch to hoop, in the reserved strip below the floor
+  const spanY = floorY + 20;
   c.beginPath();
-  c.moveTo(px(LAUNCH.x), dimY);
-  c.lineTo(px(HOOP.x), dimY);
+  c.moveTo(px(LAUNCH.x), spanY);
+  c.lineTo(px(HOOP.x), spanY);
+  c.moveTo(px(LAUNCH.x), spanY - 5);
+  c.lineTo(px(LAUNCH.x), spanY + 5);
+  c.moveTo(px(HOOP.x), spanY - 5);
+  c.lineTo(px(HOOP.x), spanY + 5);
   c.stroke();
-  label(c, `${HOOP.x.toFixed(1)} m`, px(HOOP.x / 2), dimY);
+  label(c, `${HOOP.x.toFixed(1)} m`, px(HOOP.x / 2), spanY);
 
-  // rim height, measured off the floor
-  const hx = px(HOOP.x) + 46;
-  dashed(c, hx, py(HOOP.y), hx, floorY);
-  label(c, `${HOOP.y.toFixed(2)} m`, hx + 4, py(HOOP.y / 2), 'left');
+  // --- rim height, measured off the floor, clear of the pole
+  const hx = poleX + 42;
+  dashed(c, px(HOOP.x), py(HOOP.y), hx, py(HOOP.y));
+  c.beginPath();
+  c.moveTo(hx, py(HOOP.y));
+  c.lineTo(hx, floorY);
+  c.moveTo(hx - 5, py(HOOP.y));
+  c.lineTo(hx + 5, py(HOOP.y));
+  c.moveTo(hx - 5, floorY);
+  c.lineTo(hx + 5, floorY);
+  c.stroke();
+  label(c, `${HOOP.y.toFixed(2)} m`, hx + 8, py(HOOP.y / 2), 'left');
 
-  // release height
-  const lx = px(LAUNCH.x) + 24;
-  dashed(c, lx, py(LAUNCH.y), lx, floorY);
-  label(c, `${LAUNCH.y.toFixed(1)} m`, lx + 4, py(LAUNCH.y / 2), 'left');
+  // --- release height
+  const lx = px(LAUNCH.x) + 40;
+  dashed(c, px(LAUNCH.x) + 3, py(LAUNCH.y), lx, py(LAUNCH.y));
+  c.beginPath();
+  c.moveTo(lx, py(LAUNCH.y));
+  c.lineTo(lx, floorY);
+  c.moveTo(lx - 5, py(LAUNCH.y));
+  c.lineTo(lx + 5, py(LAUNCH.y));
+  c.moveTo(lx - 5, floorY);
+  c.lineTo(lx + 5, floorY);
+  c.stroke();
+  label(c, `${LAUNCH.y.toFixed(1)} m`, lx + 8, py(LAUNCH.y / 2), 'left');
 }
 
 function drawArc(c, points, stroke, width, dash) {
@@ -230,7 +261,7 @@ export default function Stage({ velocity = null, trajectory = null, progress = 1
     if (trajectory && trajectory.length) {
       const n = Math.max(2, Math.round(trajectory.length * Math.min(1, Math.max(0, progress))));
       const shown = trajectory.slice(0, n);
-      drawArc(c, shown, TRAIL, 3);
+      drawArc(c, shown, TRAIL, 3.5);
       drawBall(c, shown[shown.length - 1]);
     }
 
