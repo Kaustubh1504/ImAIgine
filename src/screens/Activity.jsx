@@ -23,8 +23,14 @@ export default function Activity({ go, role }) {
   const [attempts, setAttempts] = useState(0);
 
   const raf = useRef(null);
+  const safety = useRef(null);
 
-  useEffect(() => () => cancelAnimationFrame(raf.current), []);
+  const clearTimers = () => {
+    cancelAnimationFrame(raf.current);
+    clearTimeout(safety.current);
+  };
+
+  useEffect(() => clearTimers, []);
 
   const shoot = useCallback(
     (velocity) => {
@@ -37,18 +43,30 @@ export default function Activity({ go, role }) {
       const duration = (flightSeconds / PLAYBACK_RATE) * 1000;
       const start = performance.now();
 
-      cancelAnimationFrame(raf.current);
+      clearTimers();
+
+      let done = false;
+      const finish = () => {
+        if (done) return;
+        done = true;
+        clearTimers();
+        setProgress(1);
+        setAttempts((a) => a + 1);
+        setStep('outcome');
+      };
+
       const tick = (now) => {
         const p = Math.min(1, (now - start) / duration);
         setProgress(p);
-        if (p < 1) {
-          raf.current = requestAnimationFrame(tick);
-        } else {
-          setAttempts((a) => a + 1);
-          setStep('outcome');
-        }
+        if (p < 1) raf.current = requestAnimationFrame(tick);
+        else finish();
       };
       raf.current = requestAnimationFrame(tick);
+
+      // rAF is the normal path. If the tab is backgrounded mid-shot the browser
+      // stops producing frames and the step machine would hang on Run forever,
+      // which on stage looks like a crash. This guarantees it always lands.
+      safety.current = setTimeout(finish, duration + 500);
     },
     []
   );
