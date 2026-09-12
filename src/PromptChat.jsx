@@ -10,8 +10,13 @@ import './promptchat.css';
  * through to the generating screen so the simulation feels asked for rather
  * than picked off a list.
  */
+// Not a default -- the teacher types their own. This only backs the chip, as
+// insurance if live typing fumbles in front of an audience.
 const SUGGESTED =
   'A student launches a basketball at a fixed 50°, releasing it 2.0 m above the floor. The hoop is 7.0 m away with its rim 3.05 m up. Let them solve for the launch speed and watch their own number play out.';
+
+const PLACEHOLDER =
+  'e.g. A basketball is launched at 50° from 2.0 m up. The hoop is 7.0 m away, rim at 3.05 m. Have students solve for the launch speed.';
 
 const CHIPS = [
   'Projectile motion — basketball shot',
@@ -20,7 +25,7 @@ const CHIPS = [
 ];
 
 export default function PromptChat({ onGenerate, role }) {
-  const [value, setValue] = useState(SUGGESTED);
+  const [value, setValue] = useState('');
   const [sent, setSent] = useState(null);
   const timer = useRef(null);
 
@@ -88,7 +93,7 @@ export default function PromptChat({ onGenerate, role }) {
               rows={3}
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder="Describe the activity…"
+              placeholder={PLACEHOLDER}
             />
             <button className="pchat-send" type="submit" disabled={!value.trim()}>
               Generate simulation →
