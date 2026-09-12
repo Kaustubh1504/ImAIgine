@@ -62,3 +62,41 @@ export function bannerArt(courseId) {
   const svg = `<svg ${VIEW}>${body}</svg>`.replace(/\s+/g, ' ').trim();
   return `url("data:image/svg+xml,${svg.replace(/</g, '%3C').replace(/>/g, '%3E').replace(/"/g, "'").replace(/#/g, '%23')}")`;
 }
+
+/**
+ * Wider scenes for the course hero on Screen 2. Physics gets the activity
+ * itself -- a launch arc into a hoop over a measured floor -- so the banner
+ * previews what the course actually does rather than decorating it.
+ */
+const HERO = {
+  physics: `
+    <g stroke="%23fff" fill="none" opacity="0.16" stroke-width="1.1">
+      <path d="M40 18 V104"/><path d="M100 18 V104"/><path d="M160 18 V104"/>
+      <path d="M220 18 V104"/><path d="M280 18 V104"/><path d="M340 18 V104"/>
+      <path d="M24 34 H396"/><path d="M24 62 H396"/><path d="M24 90 H396"/>
+    </g>
+    <g stroke="%23fff" fill="none" stroke-width="2" opacity="0.38" stroke-linecap="round">
+      <path d="M24 104 H396"/>
+      <path d="M46 96 C120 14, 236 14, 300 70" stroke-dasharray="1 0"/>
+      <path d="M292 70 H326"/>
+      <path d="M296 70 L302 84"/><path d="M304 70 L308 84"/>
+      <path d="M312 70 L314 84"/><path d="M320 70 L318 84"/>
+      <path d="M338 104 V66 H326"/>
+      <path d="M338 58 V78"/>
+    </g>
+    <circle cx="300" cy="70" r="7" fill="%23fff" opacity="0.5"/>
+    <circle cx="46" cy="96" r="4" fill="%23fff" opacity="0.4"/>`,
+};
+
+export function heroArt(courseId) {
+  const body = HERO[courseId];
+  if (!body) return bannerArt(courseId);
+  const svg = `<svg viewBox="0 0 420 120" xmlns="http://www.w3.org/2000/svg">${body}</svg>`
+    .replace(/\s+/g, ' ')
+    .trim();
+  return `url("data:image/svg+xml,${svg
+    .replace(/</g, '%3C')
+    .replace(/>/g, '%3E')
+    .replace(/"/g, "'")
+    .replace(/#/g, '%23')}")`;
+}

@@ -1,8 +1,9 @@
 // PERSON B OWNS THIS FILE. Screen 3 — activities inside one topic.
 import React from 'react';
 import { SUBTOPICS, findCourse, findTopic } from '../catalog.js';
+import PromptChat from '../PromptChat.jsx';
 
-export default function Subtopics({ nav, go }) {
+export default function Subtopics({ nav, go, role }) {
   const course = findCourse(nav.courseId) || findCourse('physics');
   const topic = findTopic(course.id, nav.topicId) || findTopic(course.id, 'kinematics');
   const subtopics = SUBTOPICS[topic.id] || [];
@@ -28,6 +29,8 @@ export default function Subtopics({ nav, go }) {
 
       <h1 className="page-title">{topic.name}</h1>
       <p className="page-sub">{topic.description}</p>
+
+      <PromptChat role={role} onGenerate={(prompt) => go({ screen: 5, prompt })} />
 
       <div className="list">
         {subtopics.map((s) => (

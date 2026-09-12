@@ -193,3 +193,16 @@
   margin-top: 18px; background: none; border: none;
   color: var(--muted); font-size: 12px; text-decoration: underline; padding: 0;
 }
+
+.generating-prompt {
+  margin: 8px 0 16px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+  font-style: italic;
+  /* Two lines and then ellipsis. Unclamped it ran into the progress bar. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

@@ -1,6 +1,7 @@
 // PERSON B OWNS THIS FILE. Screen 2 — coursework inside one class.
 import React from 'react';
 import { TOPICS, findCourse } from '../catalog.js';
+import { heroArt } from '../bannerArt.js';
 
 export default function Topics({ nav, go, role }) {
   const course = findCourse(nav.courseId) || findCourse('physics');
@@ -21,7 +22,16 @@ export default function Topics({ nav, go, role }) {
         <span className="crumb-current">{course.name}</span>
       </nav>
 
-      <div className="hero" style={{ background: course.band }}>
+      <div
+        className="hero"
+        style={{
+          backgroundColor: course.band,
+          backgroundImage: heroArt(course.id),
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'right -8px center',
+          backgroundSize: 'auto 118%',
+        }}
+      >
         <h1 className="hero-name">{course.name}</h1>
         <p className="hero-meta">
           {course.grade} · {course.section} · {course.teacher}

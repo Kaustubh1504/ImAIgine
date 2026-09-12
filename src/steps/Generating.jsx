@@ -17,7 +17,7 @@ const PHASES = [
 
 const PHASE_MS = 520;
 
-export default function Generating({ onDone }) {
+export default function Generating({ onDone, prompt }) {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -43,6 +43,7 @@ export default function Generating({ onDone }) {
           Im<span className="generating-ai">AI</span>gine
         </div>
         <p className="generating-caption">Generating simulation…</p>
+        {prompt && <p className="generating-prompt">“{prompt}”</p>}
 
         <div className="generating-bar">
           <div className="generating-fill" style={{ width: `${pct}%` }} />

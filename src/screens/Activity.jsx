@@ -19,7 +19,7 @@ const PLAYBACK_RATE = 0.55;
 const MIN_FLIGHT_MS = 1600;
 const MAX_FLIGHT_MS = 3200;
 
-export default function Activity({ go, role }) {
+export default function Activity({ nav, go, role }) {
   // 'generating' is the beat after the teacher clicks Generate simulation.
   const [phase, setPhase] = useState('generating');
   const [step, setStep] = useState('compute');
@@ -109,7 +109,7 @@ export default function Activity({ go, role }) {
             ghosts={ghosts}
           />
           <Reactions outcome={step === 'outcome' ? shot && shot.outcome : null} />
-          {phase === 'generating' && <Generating onDone={() => setPhase('ready')} />}
+          {phase === 'generating' && <Generating prompt={nav && nav.prompt} onDone={() => setPhase('ready')} />}
         </div>
       </div>
 

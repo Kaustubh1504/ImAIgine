@@ -13,6 +13,7 @@ export default function App() {
     courseId: null,
     topicId: null,
     subtopicId: null,
+    prompt: null, // the teacher's wording, carried through to the loading screen
   });
   const [role, setRole] = useState('student');
 
