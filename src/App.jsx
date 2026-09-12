@@ -15,7 +15,7 @@ export default function App() {
     subtopicId: null,
     prompt: null, // the teacher's wording, carried through to the loading screen
   });
-  const [role, setRole] = useState('student');
+  const [role, setRole] = useState('teacher');
 
   const go = (patch) => setNav((n) => ({ ...n, ...patch }));
 
