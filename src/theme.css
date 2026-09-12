@@ -1,14 +1,22 @@
 /* PERSON B OWNS THIS FILE. Classroom tokens live here.
    Fonts must stay local — the zero-network claim is checked in the network tab. */
+
+/* Accent is deliberately indigo, not Google blue. Classroom-*inspired*: we take
+   the information architecture, not the palette, or judges read the whole thing
+   as a Classroom mockup instead of a product. */
 :root {
-  --bg: #f1f3f4;
+  --bg: #f4f4f7;
   --surface: #ffffff;
-  --border: #dadce0;
-  --primary: #1a73e8;
-  --text: #202124;
-  --muted: #5f6368;
+  --border: #dfe1e8;
+  --primary: #4338ca;
+  --primary-dark: #3730a3;
+  --primary-tint: #ecebfb;
+  --text: #1c1d24;
+  --muted: #63667a;
+  --success: #188038;
   --radius: 8px;
-  --shadow: 0 1px 2px rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+  --shadow: 0 1px 2px rgba(28, 29, 36, 0.16), 0 1px 3px 1px rgba(28, 29, 36, 0.08);
+  --shadow-hover: 0 1px 3px rgba(28, 29, 36, 0.2), 0 4px 8px 3px rgba(28, 29, 36, 0.1);
 }
 
 * { box-sizing: border-box; }
@@ -22,7 +30,11 @@ body {
 
 button { font-family: inherit; cursor: pointer; }
 
-.app { min-height: 100vh; display: flex; flex-direction: column; }
+/* Exactly one viewport tall, not "at least". Screen 5 sets height: 100% on
+   .activity, and a percentage height needs a definite parent to resolve
+   against — with min-height it falls back to auto, the panel grows instead of
+   scrolling, and the whole page scrolls at 1280x720. */
+.app { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
 .app-header {
   height: 56px;
@@ -50,11 +62,284 @@ button { font-family: inherit; cursor: pointer; }
 }
 .role-btn.is-active { background: var(--primary); border-color: var(--primary); color: #fff; }
 
-.app-main { flex: 1 1 auto; min-height: 0; }
+/* Browse screens scroll here if a window is smaller than the projector.
+   Screen 5 fits exactly, so no scrollbar appears on it. */
+.app-main { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
 
 .btn-primary {
   background: var(--primary); color: #fff; border: none;
   padding: 10px 24px; border-radius: 4px; font-size: 14px; font-weight: 500;
 }
+.btn-primary:hover { background: var(--primary-dark); }
 
 .screen-stub { padding: 40px; }
+
+/* ------------------------------------------------------------------ *
+ * Shared browse-screen furniture (screens 1-4)
+ * ------------------------------------------------------------------ */
+
+.page { max-width: 1000px; margin: 0 auto; padding: 28px 24px 48px; }
+
+.crumbs {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--muted); margin-bottom: 14px;
+}
+.crumb {
+  background: none; border: none; padding: 0;
+  font-size: 13px; color: var(--muted); text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.crumb:hover { color: var(--primary); }
+.crumb-sep { color: #b9bcc9; }
+.crumb-current { color: var(--text); font-weight: 500; }
+
+.page-title { margin: 0 0 4px; font-size: 26px; font-weight: 500; }
+.page-sub { margin: 0 0 22px; font-size: 14px; color: var(--muted); }
+
+.pill-soon {
+  font-size: 11px; font-weight: 600; letter-spacing: .02em;
+  color: var(--muted); background: #eceef3;
+  border-radius: 999px; padding: 3px 9px; white-space: nowrap;
+}
+
+/* A row or card that is set dressing: visible, clearly not clickable. */
+.is-soon { opacity: .55; }
+.is-soon:hover { box-shadow: var(--shadow); transform: none; }
+
+/* ------------------------------------------------------------------ *
+ * Screen 1 — Classes
+ * ------------------------------------------------------------------ */
+
+.class-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(276px, 1fr));
+  gap: 18px;
+}
+
+.class-card {
+  display: flex; flex-direction: column;
+  text-align: left; padding: 0; overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: box-shadow .15s ease, transform .15s ease;
+}
+.class-card:not(.is-soon):hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+/* The banner is the strongest single signal that this is a classroom tool. */
+.class-banner {
+  height: 92px; padding: 14px 16px;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  color: #fff;
+}
+.class-banner-name { font-size: 20px; font-weight: 500; }
+.class-banner-section { font-size: 12px; opacity: .9; margin-top: 2px; }
+
+.class-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+.class-teacher { font-size: 13px; color: var(--text); font-weight: 500; }
+.class-desc { font-size: 13px; color: var(--muted); line-height: 1.45; margin: 0; }
+.class-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; margin-top: 4px;
+  font-size: 12px; color: var(--muted);
+  border-top: 1px solid var(--border); padding-top: 10px;
+}
+
+/* ------------------------------------------------------------------ *
+ * Screen 2 / 3 — Topic and subtopic lists
+ * ------------------------------------------------------------------ */
+
+.hero {
+  border-radius: var(--radius);
+  padding: 26px 24px;
+  color: #fff;
+  margin-bottom: 22px;
+}
+.hero-name { margin: 0; font-size: 28px; font-weight: 500; }
+.hero-meta { margin: 6px 0 0; font-size: 13px; opacity: .92; }
+
+.list { display: flex; flex-direction: column; gap: 10px; }
+
+.row {
+  display: flex; align-items: center; gap: 14px;
+  width: 100%; text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px 16px;
+  transition: box-shadow .15s ease, transform .15s ease;
+}
+.row:not(.is-soon):hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-1px);
+}
+
+.row-icon {
+  flex: 0 0 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--primary-tint); color: var(--primary);
+  font-size: 18px;
+}
+/* These are spans inside a span, so they need blockifying or the title and the
+   description render on one line with no separator. */
+.row-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; }
+.row-title { font-size: 16px; font-weight: 500; }
+.row-desc { font-size: 13px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+.row-meta { flex: 0 0 auto; font-size: 12px; color: var(--muted); text-align: right; }
+.row-arrow { flex: 0 0 auto; color: var(--muted); font-size: 18px; }
+
+/* ------------------------------------------------------------------ *
+ * Screen 4 — Launch (activity brief)
+ * ------------------------------------------------------------------ */
+
+/* Tight on purpose: this screen is walked through on a projector, so the
+   Start button cannot sit below the fold at 1280x720. */
+.launch { max-width: 1180px; margin: 0 auto; padding: 16px 24px 18px; }
+
+.launch-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 676px;
+  gap: 26px;
+  align-items: start;
+}
+
+.launch-title { margin: 0 0 2px; font-size: 24px; font-weight: 500; }
+
+.grade-badge {
+  display: inline-block; margin: 5px 0 11px;
+  font-size: 12px; font-weight: 600;
+  color: var(--primary); background: var(--primary-tint);
+  border-radius: 999px; padding: 4px 11px;
+}
+
+.brief-block { margin-bottom: 11px; }
+.brief-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 6px;
+}
+.brief-text { margin: 0; font-size: 14px; line-height: 1.55; }
+
+.brief-steps { margin: 0; padding: 0; list-style: none; counter-reset: s; }
+.brief-steps li {
+  counter-increment: s;
+  display: flex; align-items: baseline; gap: 10px;
+  font-size: 14px; line-height: 1.5; padding: 3px 0;
+}
+.brief-steps li::before {
+  content: counter(s);
+  flex: 0 0 20px; height: 20px; border-radius: 50%;
+  background: var(--primary-tint); color: var(--primary);
+  font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.brief-prereqs { margin: 0; padding-left: 18px; font-size: 14px; line-height: 1.6; }
+
+.launch-preview {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 8px;
+  line-height: 0;
+}
+
+.launch-actions { margin-top: 14px; display: flex; align-items: center; gap: 10px; }
+.btn-lg { font-size: 15px; padding: 12px 28px; }
+.btn-secondary {
+  background: none; border: 1px solid var(--border); color: var(--primary);
+  padding: 12px 20px; border-radius: 4px; font-size: 14px; font-weight: 500;
+}
+.btn-secondary:hover { background: var(--primary-tint); }
+
+/* ------------------------------------------------------------------ *
+ * Equation display. No KaTeX — it is a dependency and we have no time.
+ * Used on screen 4 and inside the reasoning panel on screen 5.
+ * ------------------------------------------------------------------ */
+
+.eq {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: #f7f7fb;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--primary);
+  border-radius: 0 6px 6px 0;
+  padding: 12px 14px;
+  font-size: 15px;
+  line-height: 1.7;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.eq-unknown { color: var(--primary); font-weight: 700; }
+.eq-note {
+  margin: 6px 0 0; font-size: 12px; color: var(--muted); line-height: 1.5;
+}
+
+/* Two columns, because screen 5 has 664px of height and no scrollbar. */
+.givens-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px 14px;
+}
+.given {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 8px; font-size: 12px;
+  border-bottom: 1px dotted var(--border); padding-bottom: 2px;
+}
+.given-label { color: var(--muted); font-size: 11px; }
+.given-value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 600; white-space: nowrap; font-size: 12.5px;
+}
+
+/* ------------------------------------------------------------------ *
+ * Reasoning panel (screen 5). The frame is styled in activity.css,
+ * which Person A owns; the contents are ours.
+ * ------------------------------------------------------------------ */
+
+/* activity.css sets gap: 14px on the panel. At 638px of height that is three
+   gaps we cannot spare on the predict step. */
+.activity .reasoning-panel { gap: 10px; }
+
+.panel-scenario {
+  margin: 0; font-size: 12px; line-height: 1.45; color: var(--muted);
+  background: #f7f7fb; border-radius: 6px; padding: 8px 10px;
+}
+
+/* Pinned to the bottom of the panel so the interactive step sits at the top,
+   where a student's eye and a presenter's finger both go first. */
+.panel-maths {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.panel-maths .eq { font-size: 12.5px; padding: 9px 11px; line-height: 1.5; }
+.eq-secondary { border-left-color: var(--muted); color: var(--muted); }
+.panel-givens-label { margin-top: 2px; }
+
+/* ------------------------------------------------------------------ *
+ * Palette reconciliation with src/steps/activity.css
+ *
+ * activity.css (Person A's file) hardcodes Google-blue #e8f0fe for its picked
+ * and active states. Rather than edit a file we do not own, re-point those few
+ * states at the indigo tint from higher specificity. If Person A swaps those
+ * literals for var(--primary-tint), this whole block can be deleted.
+ * ------------------------------------------------------------------ */
+
+.activity .step-chip.is-active { background: var(--primary-tint); }
+.reasoning-panel .predict-btn.is-picked,
+.reasoning-panel .confidence-btn.is-picked,
+.reasoning-panel .explain-btn.is-picked { background: var(--primary-tint); }
+
+/* App.jsx sets the "AI" in ImAIgine with an inline color: #1a73e8, which an
+   inline style means CSS cannot reach without !important. The generating
+   overlay already uses var(--primary) for the same wordmark, so without this
+   the logo is two different colours in the same app. Delete this rule once
+   App.jsx uses var(--primary) instead of a literal. */
+.brand-name span { color: var(--primary) !important; }
