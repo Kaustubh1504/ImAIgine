@@ -4,6 +4,7 @@ import Topics from './screens/Topics.jsx';
 import Subtopics from './screens/Subtopics.jsx';
 import Launch from './screens/Launch.jsx';
 import Activity from './screens/Activity.jsx';
+import Logo from './Logo.jsx';
 
 // Five screens, no router. One piece of nav state, passed down.
 export default function App() {
@@ -29,9 +30,11 @@ export default function App() {
     <div className="app">
       <header className="app-header">
         <button className="brand" onClick={() => go({ screen: 1 })}>
-          <span className="brand-mark">🏀</span>
+          <span className="brand-mark">
+            <Logo />
+          </span>
           <span className="brand-name">
-            Im<span style={{ color: '#1a73e8' }}>AI</span>gine
+            Im<span>AI</span>gine
           </span>
         </button>
         <div className="role-toggle">

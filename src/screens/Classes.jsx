@@ -1,6 +1,7 @@
 // PERSON B OWNS THIS FILE. Screen 1 — the classes a teacher or student sees.
 import React from 'react';
 import { COURSES } from '../catalog.js';
+import { bannerArt } from '../bannerArt.js';
 
 export default function Classes({ go, role }) {
   const open = (course) => {
@@ -25,7 +26,16 @@ export default function Classes({ go, role }) {
             onClick={() => open(c)}
             disabled={!c.available}
           >
-            <div className="class-banner" style={{ background: c.band }}>
+            <div
+              className="class-banner"
+              style={{
+                backgroundColor: c.band,
+                backgroundImage: bannerArt(c.id),
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right -10px center',
+                backgroundSize: 'auto 100%',
+              }}
+            >
               <span className="class-banner-name">{c.name}</span>
               <span className="class-banner-section">
                 {c.grade} · {c.section}
