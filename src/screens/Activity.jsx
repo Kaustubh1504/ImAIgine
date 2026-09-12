@@ -7,6 +7,7 @@ import Predict from '../steps/Predict.jsx';
 import Compute from '../steps/Compute.jsx';
 import Outcome from '../steps/Outcome.jsx';
 import Explain from '../steps/Explain.jsx';
+import Generating from '../steps/Generating.jsx';
 import { simulate } from '../physics.js';
 import { FIXED_ANGLE } from '../contract.js';
 import '../steps/activity.css';
@@ -15,6 +16,8 @@ import '../steps/activity.css';
 const PLAYBACK_RATE = 0.55;
 
 export default function Activity({ go, role }) {
+  // 'generating' is the beat after the teacher clicks Generate simulation.
+  const [phase, setPhase] = useState('generating');
   const [step, setStep] = useState('predict');
   const [prediction, setPrediction] = useState(null);
   const [shot, setShot] = useState(null);
@@ -93,7 +96,7 @@ export default function Activity({ go, role }) {
   return (
     <div className="activity">
       <div className="activity-stage-col">
-        <StepTracker step={step === 'run' ? 'run' : step} attempts={attempts} />
+        <StepTracker step={phase === 'generating' ? null : step} attempts={attempts} />
         <div className="stage-frame">
           <Stage
             velocity={shot ? shot.enteredVelocity : null}
@@ -102,11 +105,21 @@ export default function Activity({ go, role }) {
             ghosts={ghosts}
           />
           <Reactions outcome={step === 'outcome' ? shot && shot.outcome : null} />
+          {phase === 'generating' && <Generating onDone={() => setPhase('ready')} />}
         </div>
       </div>
 
       <ReasoningPanel step={panelStep} role={role}>
-        {step === 'predict' && (
+        {phase === 'generating' && (
+          <div className="step-body">
+            <h3 className="step-title">Preparing your activity…</h3>
+            <p className="step-sub">
+              The court, the equation, and the numbers are being set up.
+            </p>
+          </div>
+        )}
+
+        {phase === 'ready' && step === 'predict' && (
           <Predict
             onDone={(p) => {
               setPrediction(p);
@@ -115,16 +128,16 @@ export default function Activity({ go, role }) {
           />
         )}
 
-        {step === 'compute' && <Compute onShoot={shoot} attempt={attempts} />}
+        {phase === 'ready' && step === 'compute' && <Compute onShoot={shoot} attempt={attempts} />}
 
-        {step === 'run' && (
+        {phase === 'ready' && step === 'run' && (
           <div className="step-body">
             <h3 className="step-title">In flight…</h3>
             <p className="step-sub">Watch what {shot.enteredVelocity} m/s actually does.</p>
           </div>
         )}
 
-        {step === 'outcome' && shot && (
+        {phase === 'ready' && step === 'outcome' && shot && (
           <Outcome
             shot={shot}
             prediction={prediction}
@@ -134,7 +147,7 @@ export default function Activity({ go, role }) {
           />
         )}
 
-        {step === 'explain' && <Explain onBack={revise} />}
+        {phase === 'ready' && step === 'explain' && <Explain onBack={revise} />}
       </ReasoningPanel>
     </div>
   );

@@ -195,28 +195,104 @@ function drawArc(c, points, stroke, width, dash) {
   c.restore();
 }
 
-function drawBall(c, p) {
+// Backspin in radians per metre travelled. True rolling (dist / r) would be
+// ~33 revolutions on the 15 m/s shot and read as a blur, so this is tuned to
+// roughly 2.5 rev/sec at demo playback: fast enough to see, slow enough to read.
+const SPIN_RAD_PER_M = 1.6;
+
+// Purely visual. A regulation ball is 0.24 m across and the rim 0.46 m, so at
+// our scale that is a 12 px ball inside a 23 px rim -- true, but an unreadable
+// dot on a projector with no room for seams. 1.25x takes the ball to 15 px
+// against the same 23 px rim: still plainly narrower than the hoop, so "it fits
+// through" reads true, but legible from the back of a room. Physics never uses
+// BALL_RADIUS, so nothing downstream is affected.
+const BALL_VISUAL_SCALE = 1.25;
+
+// Trail that fades in towards the ball, so the eye is pulled to where the ball
+// IS rather than where it has been.
+function drawTrail(c, points) {
+  if (!points || points.length < 2) return;
+  const a = points[0];
+  const b = points[points.length - 1];
+  const g = c.createLinearGradient(px(a.x), py(a.y), px(b.x), py(b.y));
+  g.addColorStop(0, 'rgba(230, 145, 0, 0.10)');
+  g.addColorStop(0.55, 'rgba(230, 145, 0, 0.45)');
+  g.addColorStop(1, 'rgba(230, 145, 0, 0.9)');
+  drawArc(c, points, g, 3.5);
+}
+
+function drawBallShadow(c, p) {
+  const bx = px(p.x);
+  const floorY = py(0);
+  const r = BALL_RADIUS * VIEW.pxPerMeter * BALL_VISUAL_SCALE;
+  if (bx < -r * 4 || bx > W + r * 4) return;
+
+  // Higher ball -> wider, fainter shadow. Cheap but effective depth cue.
+  const w = r * (1.5 + p.y * 0.14);
+  const alpha = Math.max(0.04, 0.2 - p.y * 0.018);
+
+  c.save();
+  c.fillStyle = 'rgba(60, 64, 67, ' + alpha + ')';
+  c.beginPath();
+  c.ellipse(bx, floorY - 1, w, w * 0.26, 0, 0, Math.PI * 2);
+  c.fill();
+  c.restore();
+}
+
+function drawBall(c, p, spin) {
   // A ball outside the view is simply not drawn. Never crash, never rescale.
   const bx = px(p.x);
   const by = py(p.y);
-  const r = BALL_RADIUS * VIEW.pxPerMeter;
+  const r = BALL_RADIUS * VIEW.pxPerMeter * BALL_VISUAL_SCALE;
   if (bx < -r || bx > W + r || by < -r || by > H + r) return;
 
-  c.fillStyle = BALL;
+  c.save();
+  c.translate(bx, by);
+
+  // Sphere shading stays fixed to the light source, so only the seams rotate.
+  const g = c.createRadialGradient(-r * 0.35, -r * 0.4, r * 0.12, 0, 0, r * 1.05);
+  g.addColorStop(0, '#ffc06b');
+  g.addColorStop(0.5, '#f2912f');
+  g.addColorStop(1, '#d9691a');
+  c.fillStyle = g;
   c.beginPath();
-  c.arc(bx, by, r, 0, Math.PI * 2);
+  c.arc(0, 0, r, 0, Math.PI * 2);
   c.fill();
-  c.strokeStyle = 'rgba(0,0,0,0.35)';
+
+  // Seams are clipped to the ball, so the bowed ones read as curving over a
+  // sphere instead of poking out the sides.
+  c.save();
+  c.beginPath();
+  c.arc(0, 0, r, 0, Math.PI * 2);
+  c.clip();
+  c.rotate(spin);
+
+  c.strokeStyle = 'rgba(64, 28, 0, 0.7)';
+  c.lineWidth = Math.max(0.9, r * 0.14);
+  c.lineCap = 'round';
+
+  c.beginPath();
+  c.moveTo(-r, 0);
+  c.lineTo(r, 0);
+  c.moveTo(0, -r);
+  c.lineTo(0, r);
+  c.stroke();
+
+  c.beginPath();
+  c.moveTo(0, -r);
+  c.quadraticCurveTo(-r * 1.5, 0, 0, r);
+  c.moveTo(0, -r);
+  c.quadraticCurveTo(r * 1.5, 0, 0, r);
+  c.stroke();
+  c.restore();
+
+  c.strokeStyle = 'rgba(140, 66, 10, 0.5)';
   c.lineWidth = 1;
   c.beginPath();
-  c.arc(bx, by, r, 0, Math.PI * 2);
+  c.arc(0, 0, r, 0, Math.PI * 2);
   c.stroke();
-  c.beginPath();
-  c.moveTo(bx - r, by);
-  c.lineTo(bx + r, by);
-  c.moveTo(bx, by - r);
-  c.lineTo(bx, by + r);
-  c.stroke();
+
+  c.restore();
 }
 
 function drawVelocityEcho(c, velocity) {
@@ -261,8 +337,18 @@ export default function Stage({ velocity = null, trajectory = null, progress = 1
     if (trajectory && trajectory.length) {
       const n = Math.max(2, Math.round(trajectory.length * Math.min(1, Math.max(0, progress))));
       const shown = trajectory.slice(0, n);
-      drawArc(c, shown, TRAIL, 3.5);
-      drawBall(c, shown[shown.length - 1]);
+      const ball = shown[shown.length - 1];
+
+      // Distance travelled drives the spin, so the ball slows its rotation as
+      // it slows down rather than spinning at a constant rate.
+      let dist = 0;
+      for (let i = 1; i < shown.length; i++) {
+        dist += Math.hypot(shown[i].x - shown[i - 1].x, shown[i].y - shown[i - 1].y);
+      }
+
+      drawBallShadow(c, ball);
+      drawTrail(c, shown);
+      drawBall(c, ball, -dist * SPIN_RAD_PER_M); // negative = backspin
     }
 
     if (velocity !== null) drawVelocityEcho(c, velocity);

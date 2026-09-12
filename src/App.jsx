@@ -30,7 +30,9 @@ export default function App() {
       <header className="app-header">
         <button className="brand" onClick={() => go({ screen: 1 })}>
           <span className="brand-mark">🏀</span>
-          <span className="brand-name">Shoot Your Shot</span>
+          <span className="brand-name">
+            Im<span style={{ color: '#1a73e8' }}>AI</span>gine
+          </span>
         </button>
         <div className="role-toggle">
           {['student', 'teacher'].map((r) => (
