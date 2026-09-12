@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { LAUNCH, HOOP, VIEW, RIM_RADIUS, BALL_RADIUS } from './contract.js';
 
 const W = VIEW.wMeters * VIEW.pxPerMeter; // 660
@@ -43,6 +43,32 @@ const GUIDE = '#8a8f94';
 
 let woodTex = null;
 let leatherTex = null;
+
+/* ------------------------------------------------------------------------ */
+/* Optional face for the shooter. Drop a square image at                      */
+/* src/assets/shooter-face.{png,jpg,jpeg,webp} and it is mapped onto the head. */
+/* Globbed rather than imported so a missing file is not a build error, and    */
+/* bundled rather than hotlinked so the zero-external-request claim holds.     */
+/* ------------------------------------------------------------------------ */
+
+const faceModules = import.meta.glob('./assets/shooter-face.{png,jpg,jpeg,webp}', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+});
+const FACE_URL = Object.values(faceModules)[0] || null;
+
+let faceImg = null;
+let faceReady = false;
+function loadFace(onReady) {
+  if (!FACE_URL || faceImg) return;
+  faceImg = new Image();
+  faceImg.onload = () => {
+    faceReady = true;
+    onReady();
+  };
+  faceImg.src = FACE_URL;
+}
 
 // Deterministic noise, so the court looks identical every run and the demo
 // never surprises us with a stray plank.
@@ -333,10 +359,30 @@ function drawShooter(c) {
   c.quadraticCurveTo(bx - 0.17 * M, py(1.26), bx - 0.11 * M, py(1.5));
   c.fill();
 
-  // head, clear of both arms
-  c.beginPath();
-  c.arc(bx + 0.02 * M, py(1.68), 0.12 * M, 0, Math.PI * 2);
-  c.fill();
+  // head, clear of both arms. With a face supplied the head is drawn larger --
+  // at true scale it is a 12px circle and any face is a smudge. The bigger head
+  // is why the figure reads as an action figure rather than a person.
+  const headX = bx + 0.02 * M;
+  const headY = py(1.68);
+  const headR = 0.12 * M * (faceReady ? 1.75 : 1);
+
+  if (faceReady) {
+    c.save();
+    c.beginPath();
+    c.arc(headX, headY, headR, 0, Math.PI * 2);
+    c.clip();
+    c.drawImage(faceImg, headX - headR, headY - headR, headR * 2, headR * 2);
+    c.restore();
+    c.strokeStyle = 'rgba(47, 54, 62, 0.55)';
+    c.lineWidth = 1.5;
+    c.beginPath();
+    c.arc(headX, headY, headR, 0, Math.PI * 2);
+    c.stroke();
+  } else {
+    c.beginPath();
+    c.arc(headX, headY, headR, 0, Math.PI * 2);
+    c.fill();
+  }
 
   // shooting arm, up to the release point
   c.lineWidth = 0.1 * M;
@@ -595,8 +641,13 @@ function drawVelocityEcho(c, velocity) {
 export default function Stage({ velocity = null, trajectory = null, progress = 1, ghosts = [] }) {
   const ref = useRef(null);
 
+  // Bumped when the face image decodes. It must be in the effect's deps or
+  // the canvas never repaints and the face never appears.
+  const [faceTick, setFaceTick] = useState(0);
+
   useEffect(() => {
     textures();
+    loadFace(() => setFaceTick((n) => n + 1));
     const canvas = ref.current;
     const c = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
@@ -635,7 +686,7 @@ export default function Stage({ velocity = null, trajectory = null, progress = 1
     }
 
     if (velocity !== null) drawVelocityEcho(c, velocity);
-  }, [velocity, trajectory, progress, ghosts]);
+  }, [velocity, trajectory, progress, ghosts, faceTick]);
 
   return <canvas ref={ref} className="stage-canvas" style={{ width: W, height: H }} />;
 }
