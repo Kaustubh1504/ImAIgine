@@ -371,13 +371,23 @@ function drawShooter(c) {
   c.lineTo(bx - 0.17 * M, py(1.78));
   c.stroke();
 
-  // Head LAST, so neither arm paints across the face. With a face supplied the head is drawn larger --
-  // at true scale it is a 12px circle and any face is a smudge. The bigger head
-  // is why the figure reads as an action figure rather than a person.
-  const headX = bx + (faceReady ? 0.11 : 0.02) * M;
-  const headY = py(faceReady ? 1.8 : 1.68);
-  const headR = 0.12 * M * (faceReady ? 2.5 : 1);
+  c.restore();
 
+  drawShooterHead(c);
+}
+
+// Drawn after the arms so neither paints across the face, and again after the
+// measurements so the enlarged head occludes the 2.0 m guide line rather than
+// wearing it. At true scale the head is a 12px circle and any face in it is a
+// smudge; the enlargement is what makes the figure an action figure.
+function drawShooterHead(c) {
+  const M = VIEW.pxPerMeter;
+  const bx = px(LAUNCH.x) + 24;
+  const headX = bx + (faceReady ? 0.18 : 0.02) * M;
+  const headY = py(faceReady ? 1.88 : 1.68);
+  const headR = 0.12 * M * (faceReady ? 3.2 : 1);
+
+  c.save();
   if (faceReady) {
     c.save();
     c.beginPath();
@@ -392,11 +402,11 @@ function drawShooter(c) {
     c.arc(headX, headY, headR, 0, Math.PI * 2);
     c.stroke();
   } else {
+    c.fillStyle = 'rgba(47, 54, 62, 0.7)';
     c.beginPath();
     c.arc(headX, headY, headR, 0, Math.PI * 2);
     c.fill();
   }
-
   c.restore();
 }
 
@@ -478,7 +488,7 @@ function drawMeasurements(c) {
   c.stroke();
   label(c, `${HOOP.y.toFixed(2)} m`, hx + 8, py(HOOP.y / 2), 'left');
 
-  const lx = px(LAUNCH.x) + 46;
+  const lx = px(LAUNCH.x) + 88;
   dashed(c, px(LAUNCH.x) + 3, py(LAUNCH.y), lx, py(LAUNCH.y));
   c.beginPath();
   c.moveTo(lx, py(LAUNCH.y));
@@ -665,6 +675,8 @@ export default function Stage({ velocity = null, trajectory = null, progress = 1
 
     drawCourt(c, bulge);
     drawMeasurements(c);
+    // Head again, over the guides, so the 2.0 m line does not cross the face.
+    drawShooterHead(c);
 
     ghosts.forEach((g) => drawArc(c, g, 'rgba(95, 99, 104, 0.32)', 2, [6, 6]));
 
